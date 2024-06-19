@@ -1,38 +1,97 @@
 import pandas as pd
-import requests
+import os
+import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import time
-import os
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 
-# Load the CSV file
+# Set up Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Ensure GUI is off
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+# Set path to chromedriver as per your configuration
+webdriver_service = ChromeService('/path/to/chromedriver')  # Change this to your actual path
+
+# Choose Chrome Browser
+driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+
+def login_spokeo(username, password):
+    driver.get('https://www.spokeo.com/login')
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "login_email")))
+
+    email_input = driver.find_element(By.NAME, 'login_email')
+    password_input = driver.find_element(By.NAME, 'login_password')
+    login_button = driver.find_element(By.XPATH, '//*[@id="login"]/form/button')
+
+    email_input.send_keys(username)
+    password_input.send_keys(password)
+    login_button.click()
+
+def search_address(address):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "q")))
+
+    search_input = driver.find_element(By.NAME, 'q')
+    search_input.clear()
+    search_input.send_keys(address)
+    search_input.send_keys(Keys.RETURN)
+
+    time.sleep(5)  # Wait for results to load; adjust as necessary
+
+def get_contact_info():
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    phone_numbers = []
+    emails = []
+
+    for phone in soup.select('.phone-number'):
+        phone_numbers.append(phone.get_text(strip=True))
+
+    for email in soup.select('.email'):
+        emails.append(email.get_text(strip=True))
+
+    return phone_numbers, emails
+
 def load_csv(file_path):
-    return pd.read_csv(file_path)
+    return pd.read_excel(file_path)
 
-# Deduplicate properties based on Address and Sale Date
 def deduplicate_data(data):
-    return data.drop_duplicates(subset=['Address', 'Sale Date'], keep='last')
-
-# Get contact info using an API (placeholder function, replace with actual API)
-def get_contact_info(address):
-    # Replace with actual API request
-    response = requests.get(f'https://api.example.com/lookup?address={address}')
-    if response.status_code == 200:
-        data = response.json()
-        return data.get('phone', ''), data.get('email', '')
-    return '', ''
-
-# Add contact info to data
-def add_contact_info(data):
-    data['Seller Phone'] = ''
-    data['Seller Email'] = ''
-    for index, row in data.iterrows():
-        phone, email = get_contact_info(row['Address'])
-        data.at[index, 'Seller Phone'] = phone
-        data.at[index, 'Seller Email'] = email
+    data.drop_duplicates(subset=['Address', 'Sale Date'], inplace=True)
     return data
 
-# Format data for PETE
+def add_contact_info(data, username, password):
+    login_spokeo(username, password)
+    data['Seller Phone'] = ''
+    data['Seller Phone2'] = ''
+    data['Seller Phone3'] = ''
+    data['Seller Phone4'] = ''
+    data['Seller Phone5'] = ''
+    data['Seller Email'] = ''
+    data['Seller Email2'] = ''
+    
+    for index, row in data.iterrows():
+        search_address(row['Address'])
+        phones, emails = get_contact_info()
+        phone_columns = ['Seller Phone', 'Seller Phone2', 'Seller Phone3', 'Seller Phone4', 'Seller Phone5']
+        email_columns = ['Seller Email', 'Seller Email2']
+        
+        for i, phone in enumerate(phones[:5]):  # Limit to 5 phone numbers
+            data.at[index, phone_columns[i]] = phone
+        
+        for i, email in enumerate(emails[:2]):  # Limit to 2 emails
+            data.at[index, email_columns[i]] = email
+    
+    driver.quit()
+    return data
+
+def save_csv(data, file_path):
+    data.to_csv(file_path, index=False)
+
 def format_for_pete(data):
     pete_data = pd.DataFrame()
     pete_data['External ID'] = data['Address']
@@ -42,50 +101,45 @@ def format_for_pete(data):
     pete_data['Auction Date'] = data['Sale Date']
     pete_data['Seller'] = data['Defendant']
     pete_data['Full Address'] = data['Address']
-    pete_data['Street'] = data['Address']
+    pete_data['Street'] = data['Address'].apply(lambda x: x.split(',')[0])
     pete_data['City'] = data['Municipality']
-    pete_data['State'] = 'WI'  # Assuming state is always Wisconsin
+    pete_data['State'] = 'WI'
     pete_data['Seller Phone'] = data['Seller Phone']
+    pete_data['Seller Phone2'] = data['Seller Phone2']
+    pete_data['Seller Phone3'] = data['Seller Phone3']
+    pete_data['Seller Phone4'] = data['Seller Phone4']
+    pete_data['Seller Phone5'] = data['Seller Phone5']
     pete_data['Seller Email'] = data['Seller Email']
+    pete_data['Seller Email2'] = data['Seller Email2']
     return pete_data
 
-# Save data to CSV
-def save_csv(data, file_path):
-    data.to_csv(file_path, index=False)
-
-# Upload data to PETE using Selenium
 def upload_to_pete(file_path, username, password):
-    driver = webdriver.Chrome()
-    driver.get('https://pete-login-url.com')
-    username_field = driver.find_element_by_name('username')
-    password_field = driver.find_element_by_name('password')
-    username_field.send_keys(username)
-    password_field.send_keys(password)
-    password_field.send_keys(Keys.RETURN)
-    time.sleep(5)
-    driver.get('https://pete-import-url.com')
-    upload_field = driver.find_element_by_name('file_upload')
-    upload_field.send_keys(file_path)
-    upload_field.submit()
-    time.sleep(5)
-    driver.quit()
+    # This function should include code to upload the CSV file to PETE
+    pass
 
 if __name__ == "__main__":
-    input_file = 'sheriffs_data.csv'
+    input_file = 'sheriffs_data.xlsx'
     deduplicated_file = 'deduplicated_sheriffs_data.csv'
     contact_info_file = 'contact_info_sheriffs_data.csv'
     pete_file = 'pete_formatted_data.csv'
     username = os.getenv('PETE_USERNAME')
     password = os.getenv('PETE_PASSWORD')
+    spokeo_username = os.getenv('SPOKEO_USERNAME')
+    spokeo_password = os.getenv('SPOKEO_PASSWORD')
+
+    if not os.path.exists(input_file):
+        print(f"Error: The input file {input_file} does not exist.")
+        exit(1)
 
     data = load_csv(input_file)
     deduplicated_data = deduplicate_data(data)
     save_csv(deduplicated_data, deduplicated_file)
     
-    data_with_contact_info = add_contact_info(deduplicated_data)
+    data_with_contact_info = add_contact_info(deduplicated_data, spokeo_username, spokeo_password)
     save_csv(data_with_contact_info, contact_info_file)
     
     pete_data = format_for_pete(data_with_contact_info)
     save_csv(pete_data, pete_file)
     
     upload_to_pete(pete_file, username, password)
+
