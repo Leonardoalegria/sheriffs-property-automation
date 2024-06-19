@@ -1,15 +1,14 @@
-import pandas as pd
-import os
 import time
+import pandas as pd
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-from webdriver_manager.chrome import ChromeDriverManager
 
 # Set up Chrome options
 chrome_options = Options()
@@ -17,8 +16,8 @@ chrome_options.add_argument("--headless")  # Ensure GUI is off
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 
-# Initialize the ChromeDriver using webdriver-manager
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+# Choose Chrome Browser
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 def login_spokeo(username, password):
     driver.get('https://www.spokeo.com/login')
@@ -137,6 +136,6 @@ if __name__ == "__main__":
     save_csv(data_with_contact_info, contact_info_file)
     
     pete_data = format_for_pete(data_with_contact_info)
-    save_csv(pete_file, index=False)
+    save_csv(pete_data, pete_file)
     
     upload_to_pete(pete_file, username, password)
