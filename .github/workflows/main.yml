@@ -1,0 +1,31 @@
+name: Property Automation
+
+on:
+  schedule:
+    - cron: '0 0 * * 2'  # Run every Tuesday at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute property automation script
+        env:
+          PETE_USERNAME: ${{ secrets.PETE_USERNAME }}
+          PETE_PASSWORD: ${{ secrets.PETE_PASSWORD }}
+        run: |
+          python property_automation.py
