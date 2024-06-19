@@ -26,17 +26,30 @@ driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
 def login_spokeo(username, password):
     print("Navigating to Spokeo login page...")
     driver.get('https://www.spokeo.com/login')
-    print("Waiting for username element...")
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "username")))
-    print("Element found.")
-
-    email_input = driver.find_element(By.ID, 'username')
-    password_input = driver.find_element(By.ID, 'password')
-    login_button = driver.find_element(By.XPATH, '//*[@id="login"]/form/button')
-
-    email_input.send_keys(username)
-    password_input.send_keys(password)
-    login_button.click()
+    
+    try:
+        print("Waiting for username element...")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "username")))
+        print("Username element found.")
+        
+        email_input = driver.find_element(By.ID, 'username')
+        password_input = driver.find_element(By.ID, 'password')
+        login_button = driver.find_element(By.XPATH, '//*[@id="login"]/form/button')
+        
+        email_input.send_keys(username)
+        password_input.send_keys(password)
+        login_button.click()
+        
+        print("Login submitted.")
+        
+    except selenium.common.exceptions.TimeoutException:
+        print("TimeoutException: Username element not found within the specified time.")
+        driver.quit()
+        exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        driver.quit()
+        exit(1)
 
 def search_address(address):
     WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "q")))
