@@ -56,7 +56,7 @@ def get_contact_info():
     return phone_numbers, emails
 
 def load_csv(file_path):
-    return pd.read_excel(file_path)
+    return pd.read_excel(file_path, engine='openpyxl')
 
 def deduplicate_data(data):
     data.drop_duplicates(subset=['Address', 'Sale Date'], inplace=True)
