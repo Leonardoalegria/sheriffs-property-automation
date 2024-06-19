@@ -1,6 +1,6 @@
-import pandas as pd
-import os
 import time
+import os
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -8,8 +8,8 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Set up Chrome options
 chrome_options = Options()
@@ -17,18 +17,21 @@ chrome_options.add_argument("--headless")  # Ensure GUI is off
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 
-# Use webdriver-manager to manage the ChromeDriver
+# Set up ChromeDriver with WebDriver Manager
 webdriver_service = ChromeService(ChromeDriverManager().install())
 
 # Choose Chrome Browser
 driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
 
 def login_spokeo(username, password):
+    print("Navigating to Spokeo login page...")
     driver.get('https://www.spokeo.com/login')
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "login_email")))
+    print("Waiting for username element...")
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "username")))
+    print("Element found.")
 
-    email_input = driver.find_element(By.NAME, 'login_email')
-    password_input = driver.find_element(By.NAME, 'login_password')
+    email_input = driver.find_element(By.ID, 'username')
+    password_input = driver.find_element(By.ID, 'password')
     login_button = driver.find_element(By.XPATH, '//*[@id="login"]/form/button')
 
     email_input.send_keys(username)
@@ -36,7 +39,7 @@ def login_spokeo(username, password):
     login_button.click()
 
 def search_address(address):
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "q")))
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "q")))
 
     search_input = driver.find_element(By.NAME, 'q')
     search_input.clear()
