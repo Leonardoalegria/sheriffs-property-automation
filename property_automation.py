@@ -29,7 +29,8 @@ def login_spokeo(username, password):
     
     try:
         print("Waiting for username element...")
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, "login_email")))
+        element_present = EC.presence_of_element_located((By.NAME, 'login_email'))
+        WebDriverWait(driver, 30).until(element_present)
         print("Username element found.")
         
         email_input = driver.find_element(By.NAME, 'login_email')
@@ -46,8 +47,6 @@ def login_spokeo(username, password):
         print(f"An unexpected error occurred: {e}")
         driver.quit()
         exit(1)
-
-# Rest of your code...
 
 def search_address(address):
     WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "q")))
