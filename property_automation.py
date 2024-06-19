@@ -1,5 +1,5 @@
-import os
 import pandas as pd
+import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
 # Set up Chrome options
@@ -16,8 +17,8 @@ chrome_options.add_argument("--headless")  # Ensure GUI is off
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 
-# Set path to chromedriver as per your configuration
-webdriver_service = ChromeService(executable_path='path/to/chromedriver')  # Change this to your actual path
+# Use webdriver-manager to manage the ChromeDriver
+webdriver_service = ChromeService(ChromeDriverManager().install())
 
 # Choose Chrome Browser
 driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
@@ -118,7 +119,7 @@ def upload_to_pete(file_path, username, password):
     pass
 
 if __name__ == "__main__":
-    input_file = 'C:/Users/Leonardo/Desktop/PAA/sheriffs_data.xlsx'  # Update this to match the new path
+    input_file = 'sheriffs_data.xlsx'
     deduplicated_file = 'deduplicated_sheriffs_data.csv'
     contact_info_file = 'contact_info_sheriffs_data.csv'
     pete_file = 'pete_formatted_data.csv'
