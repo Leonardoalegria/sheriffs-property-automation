@@ -29,11 +29,11 @@ def login_spokeo(username, password):
     
     try:
         print("Waiting for username element...")
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "username")))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, "login_email")))
         print("Username element found.")
         
-        email_input = driver.find_element(By.ID, 'username')
-        password_input = driver.find_element(By.ID, 'password')
+        email_input = driver.find_element(By.NAME, 'login_email')
+        password_input = driver.find_element(By.NAME, 'login_password')
         login_button = driver.find_element(By.XPATH, '//*[@id="login"]/form/button')
         
         email_input.send_keys(username)
