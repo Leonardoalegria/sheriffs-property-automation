@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException  # Add this import
 from bs4 import BeautifulSoup
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -42,7 +43,7 @@ def login_spokeo(username, password):
         
         print("Login submitted.")
         
-    except selenium.common.exceptions.TimeoutException:
+    except TimeoutException:  # Change this line
         print("TimeoutException: Username element not found within the specified time.")
         driver.quit()
         exit(1)
