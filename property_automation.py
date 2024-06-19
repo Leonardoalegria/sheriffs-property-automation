@@ -79,6 +79,8 @@ def deduplicate_data(data):
     data.drop_duplicates(subset=['Address', 'Sale Date'], inplace=True)
     return data
 
+# Additional functions and main script...
+
 def add_contact_info(data, username, password):
     login_spokeo(username, password)
     data['Seller Phone'] = ''
