@@ -137,6 +137,6 @@ if __name__ == "__main__":
     save_csv(data_with_contact_info, contact_info_file)
     
     pete_data = format_for_pete(data_with_contact_info)
-    save_csv(pete_data, pete_file)
+    save_csv(pete_file, index=False)
     
     upload_to_pete(pete_file, username, password)
